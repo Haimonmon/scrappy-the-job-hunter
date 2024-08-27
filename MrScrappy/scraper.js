@@ -35,6 +35,7 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
         });
 
         const getJobInfo = async () => {
+            const avoidedJobCompanyList = []
             const jobPostList = [];
             let numOfJobsFind = 0;
             for (const jobId of grabJobId){
@@ -105,6 +106,7 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
                         directLinkedInLink: getDirectLinkedInLink()
                     }
                 });
+                
                 jobPostList.push(jobPost);
                 numOfJobsFind++;
                 console.log(`Found ${numOfJobsFind} Job. . .`)
@@ -116,7 +118,8 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
         const jobs = await getJobInfo();
         
         if (jobs.length !== 0 && jobs) {
-            console.log(`Page ${pageNum} sucessfuly scraped ${jobs.length} job Posts`)
+            console.log(`Page ${pageNum + 1} sucessfuly scraped ${jobs.length} job Posts`)
+            await page.close()
             return jobs
         }
     } catch(error) {
@@ -158,27 +161,59 @@ const getMainPages = (jobName, jobLocation, maxPage) => {
 }
 
 /**
- * The Great Job Hunter
- * @param {string} jobName - Job title or name of the job you want to find
- * @param {string} jobLocation - Location of your job to where to find 
- * @param {number} maxPage - Maximum number of pages need to be scraped
+ * Checks if the ` callTheJobHunter() ` function parameter is valid
+ * @param {*} jobName 
+ * @param {*} jobLocation 
+ * @param {*} maxPage 
+ * @param {*} excludedCompanies 
+ * @returns 
  */
-const callMrOwOTheJobHunter = async (jobName, jobLocation, maxPage = 3) => {
-    const pageLinks = getMainPages(jobName, jobLocation, maxPage)
-    const scrapedJobs = await scrapeMultiplePages(pageLinks)
-    return scrapedJobs;
+const paramsIsValid = (jobName, jobLocation, maxPage, excludedCompanies) => {
+    // Checks if the Maxpage is an Whole number or Integer and the max page limit is 5 for browser effeciency
+    const isWholeNumber = (num) => typeof num === 'number' && num === Math.floor(num) && num <= 5;
+
+    // Checks if jobName and Joblocation is a string
+    const isValidStrings = (str1,str2) => typeof str1 === 'string' && typeof str2 === 'string';
+
+    // Checks if excludedCompanies is an Array
+    const isArray = (list) => Array.isArray(list) && list !== null;
+
+    // if list is not empty it Checks the array elements if its a string or if list just empty it just return true 
+    const checkArrayElement = (list) => isArray(list) && list.length !== 0 ? list.every(element => typeof element === 'string') : true;  
+
+    return isWholeNumber(maxPage) && isValidStrings(jobName, jobLocation) && isArray(excludedCompanies) && checkArrayElement(excludedCompanies)
+}
+
+/**
+ * The Great Job Hunter - this function needs a asynchronous function in order to properly work ^_^
+ * @param {string} jobName Job title or name of the job you want to find
+ * @param {string} jobLocation Location of your job to where to find 
+ * @param {number} maxPage Maximum number of pages need to be scraped
+ * @param {Array} excludedCompanies Companies that you dont want to see
+ * @returns {Promise<Array>} Returns a resolved list of job listings or Posts
+ */
+const callTheJobHunter = async (jobName, jobLocation, maxPage = 3, excludedCompanies = []) => {
+    if (paramsIsValid(jobName, jobLocation, maxPage, excludedCompanies)) {
+        const pageLinks = getMainPages(jobName, jobLocation, maxPage)
+        const scrapedJobs = await scrapeMultiplePages(pageLinks)
+        return scrapedJobs;
+    }
+    console.log('Invalid Parameter')
 }
 
 // In python this is the javascript version of ` if '__name__' == '__main__':
 if (require.main === module) {
-    callMrOwOTheJobHunter('Teacher','Toronto, Ontario, Canada')
+    ( async () => {
+        const jobs = await callTheJobHunter('Game Development', "Philippines")
+        console.log(jobs)
+    })();
 }
 
-module.exports = { callMrOwOTheJobHunter }
+module.exports = { callTheJobHunter }
 
 /*
-Reference:
-Youtube - Advanced Web Scraping with Puppeteer: Avoid Looking Like a Bot and Pass Authentication || https://youtu.be/9zwyfrVv3hg?si=ftG6XPRPWdIRZl3E
-Youtube - How to Scrape LinkedIn 2024: Link Found in Reddit kaso dikona mahanap yung Reddit Post :,D
-Youtube - Tutorial for Puppeteer: Web Scraping With Javascript (Puppeteer Tutorial) || https://youtu.be/Sag-Hz9jJNg?si=JOrbI8LLejE0oaFD
+* Reference:
+* Youtube - Advanced Web Scraping with Puppeteer: Avoid Looking Like a Bot and Pass Authentication || https://youtu.be/9zwyfrVv3hg?si=ftG6XPRPWdIRZl3E
+? Youtube - How to Scrape LinkedIn 2024: Link Found in Reddit kaso dikona mahanap yung Reddit Post :,D
+* Youtube - Tutorial for Puppeteer: Web Scraping With Javascript (Puppeteer Tutorial) || https://youtu.be/Sag-Hz9jJNg?si=JOrbI8LLejE0oaFD
 */

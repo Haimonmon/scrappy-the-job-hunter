@@ -9,13 +9,19 @@ const checkBot = async (browser) => {
 }
 
 const loginLinkedIn = async (browser) => {
-    const page = await browser.newPage()
-    await page.goto("https://www.linkedin.com/checkpoint/lg/sign-in-another-account")
-
-    await page.type('#username',email, {delay: 100});
-    await page.type('#password',password, {delay: 100});
-
-    await page.click('button[aria-label="Sign in"]');
+    try {
+        const page = await browser.newPage()
+        console.log('Logging in Linked In. . .')
+        await page.goto("https://www.linkedin.com/checkpoint/lg/sign-in-another-account")
+    
+        await page.type('#username',email, {delay: 100});
+        await page.type('#password',password, {delay: 100});
+    
+        await page.click('button[aria-label="Sign in"]');
+        console.log('Successed Logged In')
+    } catch(error) {
+        console.log('Failed to Login into Linked In')
+    }
 }
 
 /**
@@ -30,4 +36,4 @@ const randomDelay= (min,max) => {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-module.exports = { randomDelay, loginLinkedIn }
+module.exports = { randomDelay, loginLinkedIn , checkBot}
