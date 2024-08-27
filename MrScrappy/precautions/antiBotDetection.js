@@ -1,5 +1,22 @@
-const { email } = require('../account/linkedInEmail')
-const { password } = require('../account/linkedInPassword')
+const { email } = require('./account/linkedInEmail')
+const { password } = require('./account/linkedInPassword')
+
+const checkBot = async (browser) => {
+    const page = await browser.newPage()
+    await page.goto('https://bot.sannysoft.com/')
+
+    await page.screenshot({path: 'test_bot.jpg'})
+}
+
+const loginLinkedIn = async (browser) => {
+    const page = await browser.newPage()
+    await page.goto("https://www.linkedin.com/checkpoint/lg/sign-in-another-account")
+
+    await page.type('#username',email, {delay: 100});
+    await page.type('#password',password, {delay: 100});
+
+    await page.click('button[aria-label="Sign in"]');
+}
 
 /**
  * It delays every querySelector in a second to avoid continous scraping
@@ -13,8 +30,4 @@ const randomDelay= (min,max) => {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-const checkLoginPage = () => {
-
-}
-
-module.exports = { randomDelay }
+module.exports = { randomDelay, loginLinkedIn }

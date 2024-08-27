@@ -4,8 +4,9 @@ const stealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(stealthPlugin())
 
 const { executablePath } = require('puppeteer');
+
 const { timeout } = require('puppeteer');
-const { randomDelay } = require('./precautions/antiBotDetection.js')
+const { randomDelay, loginLinkedIn } = require('./precautions/antiBotDetection.js')
 
 
 /** 
@@ -107,7 +108,7 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
                 jobPostList.push(jobPost);
                 numOfJobsFind++;
                 console.log(`Found ${numOfJobsFind} Job. . .`)
-                await randomDelay(1000,3000)
+                await randomDelay(2000,4000)
             }
             return jobPostList;
         };
@@ -124,12 +125,14 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
     }
 };
 
+
 /**
  * Parallel Scraping :D
  * @param {object} urlPages - List of Pages need to be scraped
  */
 const scrapeMultiplePages = async (urlPages) => {
     const browser = await puppeteer.launch({headless: false, executablePath: executablePath()});
+    await loginLinkedIn(browser)
     const result = await Promise.all(
         urlPages.map(url => scrapeJobPosts(urlPages.indexOf(url), browser,url))
     );
@@ -172,7 +175,6 @@ if (require.main === module) {
 }
 
 module.exports = { callMrOwOTheJobHunter }
-// TODO: Bugs to fix, Empty Array return due to login page of Linked In during the start of Scraping Process
 
 /*
 Reference:
