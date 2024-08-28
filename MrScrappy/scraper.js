@@ -15,7 +15,7 @@ const { randomDelay, loginLinkedIn } = require('./precautions/antiBotDetection.j
  * @param {number} jobLocation - Location of the Job you want to find
  * @returns {object} - List of Jobs
  */
-const scrapeJobPosts = async (pageNum, browser,url) => {
+const scrapeJobPosts = async (pageNum, browser, url ,excludedCompanies) => {
     console.log('Scraping Linkedin. . .')
     
     const page = await browser.newPage();
@@ -43,7 +43,7 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
                 
                 try {
                     await page.goto(jobUrl,{ waitUntil: 'networkidle2'});
-                    await page.waitForSelector('section.top-card-layout',{timeout: 10000}); 
+                    await page.waitForSelector('section.top-card-layout',{timeout: 10000});
                 } catch(error) {
                     continue;
                 }
@@ -107,40 +107,80 @@ const scrapeJobPosts = async (pageNum, browser,url) => {
                     }
                 });
                 
-                jobPostList.push(jobPost);
+                // Sorts Companies need to avoid
+                const avoid = (jobPost, companyToAvoid) => jobPost.companyName.toLowerCase().split(' ').join('') === companyToAvoid.toLowerCase().split(' ').join('');
+
+                const hasExcludedCompanies = excludedCompanies.length !== 0;
+
+                if (hasExcludedCompanies) {
+                    // Per Scraped Job Post it checks if companyName in blackList of Companies
+                    const isExclude = excludedCompanies.some(companyToAvoid => avoid(jobPost, companyToAvoid))
+
+                    if (isExclude) {
+                        avoidedJobCompanyList.push(jobPost)
+                    } else {
+                        jobPostList.push(jobPost)
+                    }
+                } else {
+                    jobPostList.push(jobPost)
+                }
+                
                 numOfJobsFind++;
                 console.log(`Found ${numOfJobsFind} Job. . .`)
                 await randomDelay(2000,4000)
             }
-            return jobPostList;
+            return {posts: jobPostList, companyAvoided: avoidedJobCompanyList};
         };
 
         const jobs = await getJobInfo();
-        
-        if (jobs.length !== 0 && jobs) {
-            console.log(`Page ${pageNum + 1} sucessfuly scraped ${jobs.length} job Posts`)
+
+        if (jobs.posts.length !== 0 && jobs.posts) {
+            console.log(`Page ${pageNum + 1} sucessfuly scraped ${jobs.posts.length} job Posts`)
             await page.close()
             return jobs
+        } else {
+            console.log(`Page ${pageNum + 1} didnt find any Job Post Results`)
+            await page.close()
         }
+        
     } catch(error) {
-        console.log(error)
         await page.close()
     }
 };
 
+const compileScrapedData = (result) => {
+    const jobWhiteList = [];
+    const jobBlackList = [];
+
+    //Spreader Operator :), slighlty similar to args* in python but it helps to combine a list or elements within the array
+    result.forEach(job => {
+        jobWhiteList.push(...job.posts)
+        jobBlackList.push(...job.companyAvoided)
+    })
+
+    return {whiteList: jobWhiteList, blackList: jobBlackList}
+}
 
 /**
  * Parallel Scraping :D
  * @param {object} urlPages - List of Pages need to be scraped
  */
-const scrapeMultiplePages = async (urlPages) => {
+const scrapeMultiplePages = async (urlPages, excludedCompanies) => {
+    
     const browser = await puppeteer.launch({headless: false, executablePath: executablePath()});
-    await loginLinkedIn(browser)
+    await loginLinkedIn(browser);
     const result = await Promise.all(
-        urlPages.map(url => scrapeJobPosts(urlPages.indexOf(url), browser,url))
+        urlPages.map((url, index) => scrapeJobPosts(index , browser, url, excludedCompanies))
     );
+    
+    if (result) {
+        const filteredData = result.filter(search => search !== undefined);
+        const compiledData = compileScrapedData(filteredData);
+        await browser.close()
+        return compiledData
+    }
+    console.log('Oops . . . looks like no result found')
     await browser.close()
-    return result.filter(search => search !== undefined)
 }
 
 /**
@@ -170,32 +210,33 @@ const getMainPages = (jobName, jobLocation, maxPage) => {
  */
 const paramsIsValid = (jobName, jobLocation, maxPage, excludedCompanies) => {
     // Checks if the Maxpage is an Whole number or Integer and the max page limit is 5 for browser effeciency
-    const isWholeNumber = (num) => typeof num === 'number' && num === Math.floor(num) && num <= 5;
+    const isMaxPageWholeNumber = typeof maxPage === 'number' && maxPage === Math.floor(maxPage) && maxPage <= 4;
 
     // Checks if jobName and Joblocation is a string
-    const isValidStrings = (str1,str2) => typeof str1 === 'string' && typeof str2 === 'string';
+    const isJobsValidStrings = typeof jobName === 'string' && typeof jobLocation === 'string';
 
     // Checks if excludedCompanies is an Array
-    const isArray = (list) => Array.isArray(list) && list !== null;
+    const isExcludedCompaniesAnArray = Array.isArray(excludedCompanies) && excludedCompanies !== null;
 
     // if list is not empty it Checks the array elements if its a string or if list just empty it just return true 
-    const checkArrayElement = (list) => isArray(list) && list.length !== 0 ? list.every(element => typeof element === 'string') : true;  
+    const checkArrayElement = (list) => isExcludedCompaniesAnArray && list.length !== 0 ? list.every(element => typeof element === 'string') : true;  
 
-    return isWholeNumber(maxPage) && isValidStrings(jobName, jobLocation) && isArray(excludedCompanies) && checkArrayElement(excludedCompanies)
+    return isMaxPageWholeNumber && isJobsValidStrings && isExcludedCompaniesAnArray && checkArrayElement(excludedCompanies)
 }
 
 /**
  * The Great Job Hunter - this function needs a asynchronous function in order to properly work ^_^
  * @param {string} jobName Job title or name of the job you want to find
- * @param {string} jobLocation Location of your job to where to find 
- * @param {number} maxPage Maximum number of pages need to be scraped
+ * @param {string} jobLocation Location of your job to where to find
  * @param {Array} excludedCompanies Companies that you dont want to see
+ * @param {number} maxPage Maximum number of pages need to be scraped (maxPage is 4 for now)
  * @returns {Promise<Array>} Returns a resolved list of job listings or Posts
  */
-const callTheJobHunter = async (jobName, jobLocation, maxPage = 3, excludedCompanies = []) => {
+const callTheJobHunter = async (jobName, jobLocation, excludedCompanies = [], maxPage = 3, ) => {
     if (paramsIsValid(jobName, jobLocation, maxPage, excludedCompanies)) {
         const pageLinks = getMainPages(jobName, jobLocation, maxPage)
-        const scrapedJobs = await scrapeMultiplePages(pageLinks)
+        const scrapedJobs = await scrapeMultiplePages(pageLinks, excludedCompanies)
+        console.log(scrapedJobs.blackList)
         return scrapedJobs;
     }
     console.log('Invalid Parameter')
@@ -204,8 +245,7 @@ const callTheJobHunter = async (jobName, jobLocation, maxPage = 3, excludedCompa
 // In python this is the javascript version of ` if '__name__' == '__main__':
 if (require.main === module) {
     ( async () => {
-        const jobs = await callTheJobHunter('Game Development', "Philippines")
-        console.log(jobs)
+        const jobs = await callTheJobHunter('Game Development', "Philippines", ['playnetic','Ubisoft philippines'])
     })();
 }
 
