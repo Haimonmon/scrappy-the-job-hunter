@@ -7,6 +7,7 @@ const { executablePath } = require('puppeteer');
 
 const { timeout } = require('puppeteer');
 const { randomDelay, loginLinkedIn } = require('./precautions/antiBotDetection.js')
+const { saveData, getSavedData} = require('./data/saveJobPost.js')
 
 
 /** 
@@ -148,6 +149,11 @@ const scrapeJobPosts = async (pageNum, browser, url ,excludedCompanies) => {
     }
 };
 
+/**
+ * it compiles all resolves by the ` Promise ` into one Array or Data's
+ * @param {Array} result Fresh Scraoed data 
+ * @returns 
+ */
 const compileScrapedData = (result) => {
     const jobWhiteList = [];
     const jobBlackList = [];
@@ -236,7 +242,8 @@ const callTheJobHunter = async (jobName, jobLocation, excludedCompanies = [], ma
     if (paramsIsValid(jobName, jobLocation, maxPage, excludedCompanies)) {
         const pageLinks = getMainPages(jobName, jobLocation, maxPage)
         const scrapedJobs = await scrapeMultiplePages(pageLinks, excludedCompanies)
-        console.log(scrapedJobs.blackList)
+        console.log(scrapedJobs.whiteList)
+        saveData(scrapedJobs.whiteList)
         return scrapedJobs;
     }
     console.log('Invalid Parameter')

@@ -8,6 +8,10 @@ const checkBot = async (browser) => {
     await page.screenshot({path: 'test_bot.jpg'})
 }
 
+/**
+ * Logins to linked in to not to be detect as a guest or Outsider on the site
+ * @param {*} browser 
+ */
 const loginLinkedIn = async (browser) => {
     try {
         const page = await browser.newPage()

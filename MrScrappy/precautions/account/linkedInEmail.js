@@ -1,3 +1,3 @@
-const email = 'beankor8@gmail.com';
+const email = 'flabikihamon@gmail.com';
 
 module.exports = { email };
