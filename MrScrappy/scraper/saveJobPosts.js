@@ -2,7 +2,7 @@ const XLSX = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 const prompt = require('prompt-sync')();
-const { data } = require('./exampleData')
+const { data } = require('../data/exampleData1')
 
 /** Creates new Data
  * @param {string} filePath File Path to place the excel data
@@ -70,7 +70,7 @@ const addData = (dataToAdd, filePath) => {
         const updateWorkSheet = XLSX.utils.json_to_sheet(updatedData)
 
         workbook.Sheets[sheetName] = updateWorkSheet;
-        console.log('New Data has been added.')
+        console.log(` ${filteredData.length} New Data has been added.`)
         XLSX.writeFile(workbook, filePath)
     } else {
         console.log('No New Data has been added.')
@@ -98,7 +98,8 @@ const getSavedData = () => {
  */
 const saveData = (data) => {
     const filePath = path.join('./MrScrappy/data', 'scrapedData.xlsx')
-   
+    
+    // Checks if file is existed
     if (fs.existsSync(filePath)) {
         addData(data, filePath)
     } else {
@@ -109,7 +110,7 @@ const saveData = (data) => {
 //if __name__ == '__main__': :D
 if (require.main === module) {
     
-    saveData(data)
+    //saveData(data)
 }
 
 module.exports = { saveData, getSavedData }

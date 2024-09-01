@@ -1,6 +1,7 @@
 const { email } = require('./account/linkedInEmail')
 const { password } = require('./account/linkedInPassword')
 
+// Just for a quick test
 const checkBot = async (browser) => {
     const page = await browser.newPage()
     await page.goto('https://bot.sannysoft.com/')
@@ -10,7 +11,7 @@ const checkBot = async (browser) => {
 
 /**
  * Logins to linked in to not to be detect as a guest or Outsider on the site
- * @param {*} browser 
+ * @param {*} browser
  */
 const loginLinkedIn = async (browser) => {
     try {
@@ -28,6 +29,10 @@ const loginLinkedIn = async (browser) => {
     }
 }
 
+const randomUserAgent = () => {
+
+}
+
 /**
  * It delays every querySelector in a second to avoid continous scraping
  * It helps also to mimic real user browsing through the site by delaying
@@ -40,4 +45,8 @@ const randomDelay= (min,max) => {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
+/**
+ * * TODO: 
+ * ! Add random user agents for safe scraping
+ */
 module.exports = { randomDelay, loginLinkedIn , checkBot}
