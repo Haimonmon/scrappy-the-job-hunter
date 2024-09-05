@@ -3,7 +3,7 @@ const stealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 puppeteer.use(stealthPlugin())
 
-const { randomDelay, loginLinkedIn } = require('../precautions/antiBotDetection.js');
+const { randomDelay, loginLinkedIn, randomUserAgent } = require('../precautions/antiBotDetection.js');
 const { executablePath } = require('puppeteer');
 
 /** 
@@ -20,6 +20,7 @@ const scrapeJobPosts = async (pageNum, browser, url ,excludedCompanies) => {
     // const link = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${jobName}&location=${jobLocation}&geoId=&trk=public_jobs_jobs-search-bar_search-submit&original_referer=&start=0`;
     
     try {
+        await page.setUserAgent(randomUserAgent())
         await page.goto(url,{ waitUntil: 'networkidle2' })
     
         // I Can use DOM with these :)
@@ -99,7 +100,7 @@ const getJobInfo = async (page, jobIdList, excludedCompanies) => {
 
             const getApplicationStatus = () => {
                 try {
-                    return document.querySelector('figure.num-applicants__figure')?.textContent?.trim() || null;
+                    return document.querySelector('figure.num-applicants__figure')?.textContent?.trim() || document.querySelector('span.num-applicants__caption.topcard__flavor--metadata.topcard__flavor--bullet')?.textContent?.trim() || 'No Information';
                 } catch(error) {
                     return null
                 }
@@ -184,6 +185,7 @@ const scrapeMultiplePages = async (urlPages, excludedCompanies) => {
         await browser.close()
         return compiledData
     }
+
     console.log('Oops . . . looks like no result found')
     await browser.close()
 }

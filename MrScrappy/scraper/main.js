@@ -25,9 +25,9 @@ const paramsIsValid = (jobName, jobLocation, maxPage, excludedCompanies) => {
     return isMaxPageWholeNumber && isJobsValidStrings && isExcludedCompaniesAnArray && checkArrayElement(excludedCompanies)
 }
 
-const filterScrape = (maxPage = 3, owo = 'hello') => {
-    console.log(maxPage)
-}
+// const filterScrape = (maxPage = 3, owo = 'hello') => {
+//     console.log(maxPage)
+// }
 
 /**
  * The Great Job Hunter - this function needs a asynchronous function in order to properly work ^_^
@@ -41,7 +41,8 @@ const enableJobHunt = async (jobName, jobLocation, excludedCompanies = [], maxPa
     if (paramsIsValid(jobName, jobLocation, maxPage, excludedCompanies)) {
         const pageLinks = getMainPages(jobName, jobLocation, maxPage)
         const scrapedJobs = await scrapeMultiplePages(pageLinks, excludedCompanies)
-        console.log(scrapedJobs.blackList)
+        
+        scrapedJobs.blackList.length ? console.log(`${scrapedJobs.blackList.length} Companies has been excluded during the scraping Process.`) : console.log('No Companies have been Excluded during the scraping Process')
         saveData(scrapedJobs.whiteList)
         return scrapedJobs;
     }
