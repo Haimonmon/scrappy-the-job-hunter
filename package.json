@@ -10,7 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "ansi-regex": "^6.1.0",
     "jsontoxml": "^1.0.1",
+    "prompt-sync": "^4.2.0",
     "puppeteer": "^23.1.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

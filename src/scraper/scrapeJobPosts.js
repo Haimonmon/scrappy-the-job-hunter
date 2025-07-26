@@ -201,6 +201,7 @@ const getMainPages = (jobName, jobLocation, maxPage) => {
     for (let page = 0; page < maxPage ; page++) {
       const pageNum = page * 15
       const pageUrl = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${jobName}&location=${jobLocation}&geoId=&trk=public_jobs_jobs-search-bar_search-submit&original_referer=&start=${pageNum}`;
+      console.log(pageUrl)
       pageLinks.push(pageUrl)
     }
     return pageLinks

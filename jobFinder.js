@@ -1,5 +1,5 @@
 const prompt = require("prompt-sync")();
-const { callMrOwOTheJobHunter } = require("./MrScrappy/scraper")
+const { enableJobHunt } = require("./src/scraper/main.js")
 
 const displayJobInfo = (job) => {
     console.log('-'.repeat(40),'\n');
@@ -46,7 +46,7 @@ const findJob = async (jobTitle = null, jobLocation = null) => {
     const jobSearch = checkFindJobParameter(jobTitle,jobLocation)
     console.log('-'.repeat(40))
     
-    const jobs = await callMrOwOTheJobHunter(jobSearch.title,jobSearch.location)
+    const jobs = await enable(jobSearch.title,jobSearch.location)
     if (jobs.length !== 0) {
         jobs.forEach(displayJobInfo)
     } else {
@@ -57,39 +57,41 @@ const findJob = async (jobTitle = null, jobLocation = null) => {
     handleFindJobChoice(jobSearch)
 }
 
-const savedJobs = () => {
-    console.log('Saved Jobs Page Coming Soon.')
-    jobFinder()
-}
+findJob('Developer Intern', 'Malolos City, Central Luzon, Philippines');
 
-const handleJobFinderUserChoice = () => {
-    choice = prompt('Choice: ')
-    switch (choice) {
-        case '1':
-            findJob()
-            break;
-        case '2':
-            savedJobs()
-            break;
-        case '3':
-            console.log('Thank you for visiting. . .')
-            break;
-        default:
-            console.log('Invalid Choice')
-            jobFinder()
-            break;
-    }
-}
+// const savedJobs = () => {
+//     console.log('Saved Jobs Page Coming Soon.')
+//     jobFinder()
+// }
 
-/**
- * Job Finder is still on Development
- */
-const jobFinder = () => {
-    console.clear()
-    console.log('[ Job Finder Name ]');
-    console.log('[1] Find Latest Jobs\n[2] Saved Jobs\n[3] Exit');
-    handleJobFinderUserChoice();
-};
+// const handleJobFinderUserChoice = () => {
+//     choice = prompt('Choice: ')
+//     switch (choice) {
+//         case '1':
+//             findJob()
+//             break;
+//         case '2':
+//             savedJobs()
+//             break;
+//         case '3':
+//             console.log('Thank you for visiting. . .')
+//             break;
+//         default:
+//             console.log('Invalid Choice')
+//             jobFinder()
+//             break;
+//     }
+// }
 
-// TODO: Make a checkConnection Function
-jobFinder()
+// /**
+//  * Job Finder is still on Development
+//  */
+// const jobFinder = () => {
+//     console.clear()
+//     console.log('[ Job Finder Name ]');
+//     console.log('[1] Find Latest Jobs\n[2] Saved Jobs\n[3] Exit');
+//     handleJobFinderUserChoice();
+// };
+
+// // TODO: Make a checkConnection Function
+// jobFinder()

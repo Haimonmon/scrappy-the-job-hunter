@@ -52,7 +52,7 @@ const enableJobHunt = async (jobName, jobLocation, excludedCompanies = [], maxPa
 // In python this is the javascript version of ` if '__name__' == '__main__':
 if (require.main === module) {
     ( async () => {
-        const jobs = await enableJobHunt('Game Development', "Toronto")
+        const jobs = await enableJobHunt('Developer Intern', "Malolos City, Central Luzon, Philippines")
     })();
 }
 

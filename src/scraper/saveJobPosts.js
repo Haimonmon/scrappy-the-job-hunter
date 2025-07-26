@@ -148,7 +148,7 @@ const getSavedData = () => {
  * @param {*} data 
  */
 const saveData = (data) => {
-    const filePath = path.join('./MrScrappy/data', 'scrapedData.xlsx')
+    const filePath = path.join('./src/data', 'scrapedData.xlsx')
     
     // Checks if file is existed
     if (fs.existsSync(filePath)) {
